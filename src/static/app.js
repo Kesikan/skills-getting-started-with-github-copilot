@@ -1,21 +1,21 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const activitiesList = document.getElementById("activities-list");
-  const activitySelect = document.getElementById("activity");
-  const signupForm = document.getElementById("signup-form");
-  const messageDiv = document.getElementById("message");
+document.addEventListener('DOMContentLoaded', () => {
+    const activitiesList = document.getElementById('activities-list');
+    const activitySelect = document.getElementById('activity');
+    const signupForm = document.getElementById('signup-form');
+    const messageDiv = document.getElementById('message');
 
-  // Fetch and display activities
-  fetch("/activities")
-    .then((response) => response.json())
-    .then((activities) => {
-      // Clear loading text
-      activitiesList.innerHTML = "";
+    // Fetch and display activities
+    fetch('/activities')
+        .then(response => response.json())
+        .then(activities => {
+            // Clear loading text
+            activitiesList.innerHTML = '';
 
-      // Populate activity cards
-      Object.entries(activities).forEach(([name, details]) => {
-        const card = document.createElement("div");
-        card.className = "activity-card";
-        card.innerHTML = `
+            // Populate activity cards
+            Object.entries(activities).forEach(([name, details]) => {
+                const card = document.createElement('div');
+                card.className = 'activity-card';
+                card.innerHTML = `
                     <h4>${name}</h4>
                     <p>${details.description}</p>
                     <p><strong>Schedule:</strong> ${details.schedule}</p>
@@ -27,47 +27,47 @@ document.addEventListener("DOMContentLoaded", () => {
                             : '<li>No participants yet</li>'}
                     </ul>
                 `;
-        activitiesList.appendChild(card);
-      });
+                activitiesList.appendChild(card);
+            });
 
-      // Populate select options
-      activitySelect.innerHTML = '<option value="">-- Select an activity --</option>';
-      Object.keys(activities).forEach(name => {
-        const option = document.createElement('option');
-        option.value = name;
-        option.textContent = name;
-        activitySelect.appendChild(option);
-      });
-    })
-    .catch((error) => {
-      activitiesList.innerHTML = "<p>Error loading activities.</p>";
-      console.error("Error fetching activities:", error);
+            // Populate select options
+            activitySelect.innerHTML = '<option value="">-- Select an activity --</option>';
+            Object.keys(activities).forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                activitySelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            activitiesList.innerHTML = '<p>Error loading activities.</p>';
+            console.error('Error fetching activities:', error);
+        });
+
+    // Handle signup form submission
+    signupForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const activity = activitySelect.value;
+
+        fetch(`/activities/${encodeURIComponent(activity)}/signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            messageDiv.className = 'message success';
+            messageDiv.textContent = data.message;
+            messageDiv.classList.remove('hidden');
+            // Reload activities to update participants
+            location.reload();
+        })
+        .catch(error => {
+            messageDiv.className = 'message error';
+            messageDiv.textContent = 'Error signing up. Please try again.';
+            messageDiv.classList.remove('hidden');
+            console.error('Error signing up:', error);
+        });
     });
-
-  // Handle signup form submission
-  signupForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const email = document.getElementById("email").value;
-    const activity = activitySelect.value;
-
-    fetch(`/activities/${encodeURIComponent(activity)}/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ email }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        messageDiv.className = "message success";
-        messageDiv.textContent = data.message;
-        messageDiv.classList.remove("hidden");
-        // Reload activities to update participants
-        location.reload();
-      })
-      .catch((error) => {
-        messageDiv.className = "message error";
-        messageDiv.textContent = "Error signing up. Please try again.";
-        messageDiv.classList.remove("hidden");
-        console.error("Error signing up:", error);
-      });
-  });
 });
